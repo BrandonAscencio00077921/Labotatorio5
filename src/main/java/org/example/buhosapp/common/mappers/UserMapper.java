@@ -15,4 +15,12 @@ public class UserMapper {
                 .password(createUserRequest.getPassword())
                 .build();
     }
+
+    public UserResponse toDto(User user) {
+        return UserResponse.builder()
+                .username(user.getUsername())
+                .card(user.getCard())
+                .email(user.getEmail())
+                .build();
+    }
 }
