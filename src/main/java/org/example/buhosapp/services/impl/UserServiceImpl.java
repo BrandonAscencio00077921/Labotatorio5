@@ -6,6 +6,7 @@ import org.example.buhosapp.common.mappers.UserMapper;
 import org.example.buhosapp.domain.dtos.request.user.CreateUserRequest;
 import org.example.buhosapp.domain.dtos.response.role.RoleResponse;
 import org.example.buhosapp.domain.dtos.response.user.UserResponse;
+import org.example.buhosapp.exceptions.ResourceNotFoundException;
 import org.example.buhosapp.repositories.UserRepository;
 import org.example.buhosapp.services.UserService;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,12 @@ public class UserServiceImpl implements UserService {
                         userMapper.toEntityCreate(createUserRequest, roleMapper.toEntity(roleResponse))
                 )
         );
+    }
+
+    @Override
+    public UserResponse getUserById(UUID id) {
+        return userMapper.toDto(userRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("UserNotFound")
+        ));
     }
 }
