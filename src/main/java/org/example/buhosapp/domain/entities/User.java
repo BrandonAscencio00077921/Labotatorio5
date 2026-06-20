@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,6 +32,6 @@ public class User {
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "id_role", nullable = false)
     private Role role;
 }
