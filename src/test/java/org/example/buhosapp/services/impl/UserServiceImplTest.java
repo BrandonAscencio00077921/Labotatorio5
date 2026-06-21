@@ -7,6 +7,7 @@ import org.example.buhosapp.domain.dtos.response.role.RoleResponse;
 import org.example.buhosapp.domain.dtos.response.user.UserResponse;
 import org.example.buhosapp.domain.entities.Role;
 import org.example.buhosapp.domain.entities.User;
+import org.example.buhosapp.exceptions.ResourceNotFoundException;
 import org.example.buhosapp.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,9 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,6 +95,16 @@ public class UserServiceImplTest {
         when(userMapper.toDto(userEntity)).thenReturn(userResponse);
 
         var result = userService.createUser(request, roleEntity.getName());
+        assertThat(result).isEqualTo(userResponse);
+    }
+
+    @Test
+    void getUserById_shouldReturnUser_whenUserExists() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(userMapper.toDto(userEntity)).thenReturn(userResponse);
+
+        UserResponse result = userService.getUserById(userId);
+
         assertThat(result).isEqualTo(userResponse);
     }
 }
