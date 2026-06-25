@@ -1,6 +1,6 @@
 spring:
   application:
-    name: SPRING_APPLICATION_NAME
+    name: ${SPRING_APPLICATION_NAME}
 
   datasource:
     #Las variables de entorno debe tener el mismo nombre de las env en docker-compose file
