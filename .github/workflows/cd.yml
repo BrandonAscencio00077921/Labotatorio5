@@ -1,17 +1,24 @@
 name: Deploy on Docker Hub
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["Merge to develop & main"]
+    types: [completed]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    # Solo se ejecuta si el workflow de CI terminó en éxito (o si se dispara manualmente)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: code-checkout
         uses: actions/checkout@v4
+        with:
+          # Aseguramos que se construya desde el commit exacto que pasó el CI
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
@@ -26,4 +33,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/buhosapp:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/buhosapp:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/buhosapp:${{ github.event.workflow_run.head_sha || github.sha }}

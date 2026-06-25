@@ -21,6 +21,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,7 +99,24 @@ public class UserServiceImplTest {
         when(userMapper.toDto(userEntity)).thenReturn(userResponse);
 
         var result = userService.createUser(request, roleEntity.getName());
+
         assertThat(result).isEqualTo(userResponse);
+        // Verificamos que el flujo realmente persistió el usuario una sola vez
+        verify(userRepository, times(1)).save(userEntity);
+    }
+
+    @Test
+    void createUser_shouldThrowException_whenRoleDoesNotExist() {
+        String invalidRole = "ghost_role";
+        when(roleService.getRoleByName(invalidRole))
+                .thenThrow(new ResourceNotFoundException("Role Not Found"));
+
+        assertThatThrownBy(() -> userService.createUser(request, invalidRole))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Role Not Found");
+
+        // Si el rol no existe, NUNCA debe llegar a guardarse el usuario
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -106,5 +127,18 @@ public class UserServiceImplTest {
         UserResponse result = userService.getUserById(userId);
 
         assertThat(result).isEqualTo(userResponse);
+        verify(userRepository, times(1)).findById(userId);
+    }
+
+    @Test
+    void getUserById_shouldThrowException_whenUserDoesNotExist() {
+        UUID nonExistentId = UUID.randomUUID();
+        when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getUserById(nonExistentId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("User Not Found");
+
+        verify(userRepository, times(1)).findById(nonExistentId);
     }
 }
